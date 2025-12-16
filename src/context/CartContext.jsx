@@ -43,8 +43,23 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // ✅ Attach a prescription id to a cart item
+  const attachPrescription = (id, prescriptionId) => {
+    setCart((prevCart) =>
+      prevCart.map((item) => (item.id === id ? { ...item, prescriptionId } : item))
+    );
+  };
+
+  // ✅ Detach (remove) prescription from an item
+  const detachPrescription = (id) => {
+    setCart((prevCart) => prevCart.map((item) => (item.id === id ? { ...item, prescriptionId: null } : item)));
+  };
+
+  // ✅ Clear entire cart
+  const clearCart = () => setCart([]);
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQty }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQty, attachPrescription, detachPrescription, clearCart }}>
       {children}
     </CartContext.Provider>
   );

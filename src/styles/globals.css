@@ -6,6 +6,40 @@ html, body, #root {
   @apply h-full w-full bg-background text-gray-900 font-sans antialiased;
 }
 
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: #f7fdfc;
+  color: #333;
+  line-height: 1.6;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Generic buttons used across the app */
+button, .btn {
+  background: #00a6a6;
+  color: #fff;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover, .btn:hover {
+  background: #007f7f;
+  transform: translateY(-2px);
+}
+
 html {
   scroll-behavior: smooth;
 }

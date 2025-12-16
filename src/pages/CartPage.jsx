@@ -1,7 +1,12 @@
 import { useCart } from "../context/CartContext";
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { getUserPrescriptions } from "../services/prescriptionService";
 
 function CartPage() {
-  const { cart, removeFromCart, updateQty } = useCart();
+  const { cart, removeFromCart, updateQty, attachPrescription, detachPrescription } = useCart();
+  const { user } = useAuth();
+  const [prescriptions, setPrescriptions] = useState([]);
 
   const getNumericPrice = (price) => {
     if (!price) return 0;
@@ -11,6 +16,16 @@ function CartPage() {
 
   // ✅ Debugging line
   console.log("Cart items:", cart);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!user) return setPrescriptions([]);
+    getUserPrescriptions(user.uid).then((items) => {
+      if (!mounted) return;
+      setPrescriptions(items.map((p) => ({ id: p.id, name: p.name || "Prescription", status: p.status })));
+    });
+    return () => (mounted = false);
+  }, [user]);
 
   const total = cart.reduce(
     (sum, item) => sum + getNumericPrice(item.price) * (item.qty || 1),
@@ -32,6 +47,26 @@ function CartPage() {
               <div>
                 <h3 className="font-bold">{item.name}</h3>
                 <p>₹{getNumericPrice(item.price)}</p>
+                <div className="mt-2">
+                  <label className="text-sm mr-2">Attached Prescription:</label>
+                  <select
+                    value={item.prescriptionId || ""}
+                    onChange={(e) => {
+                      const val = e.target.value || null;
+                      if (!val) detachPrescription(item.id);
+                      else attachPrescription(item.id, val);
+                    }}
+                    className="border p-1 rounded"
+                    disabled={!user}
+                  >
+                    <option value="">None</option>
+                    {prescriptions.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} {p.status ? `(${p.status})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="flex items-center space-x-2">
                 <input

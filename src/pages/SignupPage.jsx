@@ -3,7 +3,10 @@ import { useNavigate, Link } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../services/firebase"; // ✅ correct path
 import "./LoginPage.css"
-export default function SignupPage() {
+import { useAuth } from "../context/AuthContext";
+
+export default function SignupPage({ setUser }) {
+  const authCtx = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,6 +20,10 @@ export default function SignupPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName: name });
+      // persist and sync user (App state + AuthContext)
+      localStorage.setItem("user", JSON.stringify(userCredential.user));
+      if (typeof setUser === "function") setUser(userCredential.user);
+      try { authCtx.setUser(userCredential.user); } catch (e) {}
       navigate("/"); // redirect to dashboard
     } catch (err) {
       setError(err.message); // shows Firebase error

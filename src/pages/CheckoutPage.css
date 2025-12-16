@@ -1,0 +1,35 @@
+/* Checkout page styles - professional layout */
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+}
+.checkout-left { background: #fff; padding: 18px; border-radius: 8px; box-shadow: 0 6px 18px rgba(16,24,40,0.06); }
+.checkout-right { background: linear-gradient(180deg,#f8fafc,#fff); padding: 18px; border-radius: 8px; border:1px solid #eef2f7; }
+.checkout-item { display:flex; justify-content:space-between; padding:10px 0; border-bottom: 1px solid #f1f5f9; }
+.ci-name { font-weight:700; }
+.ci-qty { font-weight:500; color:#6b7280; margin-left:6px; }
+.ci-price { font-weight:700; }
+.summary-row { display:flex; justify-content:space-between; padding:8px 0; color:#374151; }
+.total-row { font-size:1.05rem; font-weight:800; color:#0f172a; border-top:1px solid #e6eef8; padding-top:12px; margin-top:8px; }
+.btn-primary { background:#0ea5a4; color:#fff; padding:10px 12px; border-radius:8px; border:none; cursor:pointer; width:100%; font-weight:700; }
+.btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
+.checkout-form { display:flex; gap:24px; }
+.form-left { flex:1; background:#fff; padding:18px; border-radius:8px; box-shadow: 0 6px 18px rgba(16,24,40,0.04); }
+.form-right { width:420px; background:#fff; padding:18px; border-radius:8px; box-shadow: 0 6px 18px rgba(16,24,40,0.04); }
+.form-title { font-weight:700; margin-bottom:8px; }
+.form-left input, .form-left textarea, .form-right input { width:100%; padding:10px; border-radius:8px; border:1px solid #e6eef8; margin-bottom:10px; }
+.field-error { color:#b91c1c; font-size:13px; margin-bottom:8px; }
+.payment-methods { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+.pm { display:flex; gap:10px; align-items:center; padding:10px; border-radius:8px; border:1px solid #eef2f7; cursor:pointer; }
+.pm input { margin-right:6px; }
+.pm.active { border-color:#0ea5a4; box-shadow: 0 6px 18px rgba(14,165,164,0.06); }
+.pm-desc { font-size:13px; color:#6b7280; }
+.card-form .row { display:flex; gap:12px; }
+.order-summary-box { margin-top:14px; padding-top:12px; border-top:1px dashed #eef2f7; }
+
+/* Responsive */
+@media (max-width: 880px) {
+  .checkout-grid { grid-template-columns: 1fr; }
+  .form-right { width:100%; }
+}

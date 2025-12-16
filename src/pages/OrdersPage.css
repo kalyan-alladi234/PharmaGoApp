@@ -1,0 +1,16 @@
+.orders-list { display:flex; flex-direction:column; gap:12px; }
+.order-card { background:#fff; border-radius:8px; padding:14px; box-shadow:0 6px 18px rgba(2,6,23,0.04); }
+.order-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.order-id { font-weight:700; }
+.order-status { font-size:13px; color:#0ea5a4; font-weight:700; }
+.order-total { font-weight:800; }
+.order-item { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed #eef2f7; }
+.muted { color:#6b7280; font-size:13px; }
+.order-actions { margin-top:8px; display:flex; gap:8px; }
+.btn-primary { background:#0ea5a4; color:#fff; padding:8px 12px; border-radius:8px; border:none; cursor:pointer; }
+.btn-ghost { background:transparent; color:#374151; padding:8px 12px; border-radius:8px; border:1px solid #e6eef8; cursor:pointer; }
+.btn-danger { background:#ef4444; color:#fff; padding:8px 12px; border-radius:8px; border:none; cursor:pointer; }
+.order-timeline { margin-top:10px; padding-top:8px; border-top:1px solid #f1f5f9; }
+.timeline-entry { display:flex; justify-content:space-between; padding:6px 0; }
+.t-status { font-weight:600; }
+.t-at { font-size:13px; color:#6b7280; }

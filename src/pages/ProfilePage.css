@@ -1,0 +1,44 @@
+.profile-page {
+  padding: 24px;
+}
+
+.profile-card {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 900px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.profile-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dashed #f0f0f0;
+  align-items: flex-start;
+}
+
+.profile-row:last-child { border-bottom: none; }
+
+.profile-key {
+  min-width: 180px;
+  font-weight: 600;
+  color: #333;
+}
+
+.profile-val {
+  flex: 1;
+  color: #444;
+  word-break: break-word;
+}
+
+.profile-json {
+  background: #f7f7f9;
+  padding: 8px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  font-size: 12px;
+  overflow: auto;
+  max-height: 220px;
+}

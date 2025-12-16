@@ -1,9 +1,9 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
-
 import React, { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import NewFooter from "./components/NewFooter";
+
 import HomePage from "./pages/HomePage";
 import CatalogPage from "./pages/CatalogPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
@@ -12,15 +12,14 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
 import PrescriptionPage from "./pages/PrescriptionPage";
+import AdminPrescriptions from "./pages/AdminPrescriptions";
+import NotificationsPage from "./pages/NotificationsPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
-import Layout from "./components/Layout";
 
 function App() {
   const [user, setUser] = useState(null);
-    
 
-  // Load user from localStorage on page load
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user"));
     if (savedUser) setUser(savedUser);
@@ -32,12 +31,12 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar user={user} setUser={setUser} />
-      <main className="flex-grow container mx-auto px-4 py-6">
+    <div className="app-layout">
+      <Navbar user={user} setUser={setUser} onLogout={handleLogout} />
+
+      <main className="app-content">
         <Routes>
-          <Route element={<Layout />}></Route>
-          <Route path="/" element={<HomePage user={user} setUser={setUser} />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/catalog" element={<CatalogPage />} />
           <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
@@ -45,11 +44,14 @@ function App() {
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/prescriptions" element={<PrescriptionPage />} />
+          <Route path="/admin/prescriptions" element={<AdminPrescriptions />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/login" element={<LoginPage onLogin={setUser} />} />
-        <Route path="/signup" element={<SignupPage setUser={setUser} />} />
+          <Route path="/signup" element={<SignupPage setUser={setUser} />} />
         </Routes>
       </main>
-      <Footer />
+
+      <NewFooter />
     </div>
   );
 }

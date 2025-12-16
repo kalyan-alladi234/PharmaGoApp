@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../services/firebase"; 
+import { auth } from "../services/firebase";
+import { useAuth } from "../context/AuthContext";
 import "./LoginPage.css";
 
 export default function LoginPage({ onLogin }) { // receive onLogin prop
@@ -9,6 +10,7 @@ export default function LoginPage({ onLogin }) { // receive onLogin prop
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -20,6 +22,8 @@ export default function LoginPage({ onLogin }) { // receive onLogin prop
       // Save user to App state and localStorage
       onLogin(userCredential.user);
       localStorage.setItem("user", JSON.stringify(userCredential.user));
+      // sync AuthContext so components using useAuth see the user
+      try { setUser(userCredential.user); } catch (e) {}
 
       navigate("/"); // redirect to home/dashboard
     } catch (err) {

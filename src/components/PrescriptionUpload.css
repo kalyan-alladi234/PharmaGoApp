@@ -145,6 +145,11 @@
   background: #059669;
   transform: translateY(-2px);
 }
+.btn-upload-all[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* Uploaded files list */
 .uploaded-files {

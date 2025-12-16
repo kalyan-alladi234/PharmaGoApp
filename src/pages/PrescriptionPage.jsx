@@ -1,4 +1,6 @@
 import PrescriptionUpload from "../components/PrescriptionUpload";
+import PrescriptionList from "../components/PrescriptionList";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 function PrescriptionPage() {
   return (
@@ -7,7 +9,13 @@ function PrescriptionPage() {
       <p className="text-gray-700 mb-4">
         Upload your doctor’s prescription to get it verified before checkout.
       </p>
-      <PrescriptionUpload onUploaded={(url) => console.log("Uploaded:", url)} />
+      <ErrorBoundary>
+        <PrescriptionUpload onUploaded={(url) => console.log("Uploaded:", url)} />
+      </ErrorBoundary>
+      <hr style={{ margin: "24px 0" }} />
+      <ErrorBoundary>
+        <PrescriptionList />
+      </ErrorBoundary>
     </div>
   );
 }
