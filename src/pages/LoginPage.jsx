@@ -41,6 +41,10 @@ export default function LoginPage({ onLogin }) { // receive onLogin prop
           <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
           <button type="submit">Login</button>
         </form>
+        <div className="login-alt">
+          <p>Don't have an account?</p>
+          <button type="button" className="btn-register" onClick={() => navigate('/signup')}>Register</button>
+        </div>
       </div>
     </div>
   );

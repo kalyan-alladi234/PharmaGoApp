@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, useEffect } from "react";
+import { createContext, useContext, useMemo, useState, useEffect, useCallback } from "react";
 import { useCart } from "./CartContext";
 import { useToast } from "./ToastContext";
 import { useAuth } from "./AuthContext";
@@ -17,8 +17,9 @@ export function OrderProvider({ children }) {
   const { cart } = useCart();
   const { addToast } = useToast();
   const { user } = useAuth();
+  const [refetchKey, setRefetchKey] = useState(0);
 
-  const createOrder = ({ address, payment }) => {
+  const createOrder = useCallback(async ({ address, payment }) => {
     if (!cart.length) {
       addToast("Cart is empty.");
       return null;
@@ -30,7 +31,6 @@ export function OrderProvider({ children }) {
 
     // Build order payload
     const payload = {
-      // include attached prescription id (if any) with each item
       items: cart.map((c) => ({ id: c.id, name: c.name, price: c.price, qty: c.qty, prescriptionId: c.prescriptionId || null })),
       total: cart.reduce((s, i) => s + (Number(String(i.price).replace(/[^0-9.]/g, "")) || 0) * (i.qty || 1), 0),
       address,
@@ -39,11 +39,25 @@ export function OrderProvider({ children }) {
       timeline: [{ status: "Processing", at: new Date().toISOString() }],
     };
 
-    return createOrderRecord(user.uid, payload).then((id) => {
+    console.debug('createOrder payload', { payload, cartLen: cart.length, userId: user?.uid });
+    try {
+      const id = await createOrderRecord(user.uid, payload);
       addToast(`Order ${id} placed!`);
+      // optimistic insert so Orders page shows immediately even if subscription is slow
+      setOrders((prev) => {
+        const created = { id, ...payload, createdAt: new Date().toISOString() };
+        if (!prev) return [created];
+        // avoid duplicates
+        if (prev.find((o) => o.id === id)) return prev;
+        return [created, ...prev];
+      });
       return id;
-    });
-  };
+    } catch (e) {
+      console.error('createOrder failed', e);
+      addToast('Failed to place order. Please try again.');
+      throw e;
+    }
+  }, [cart, user, addToast]);
 
   const updateOrder = async (id, data) => {
     await updateOrderRecord(id, data);
@@ -61,20 +75,49 @@ export function OrderProvider({ children }) {
       setOrders([]);
       return;
     }
+    // ensure we have a valid uid before subscribing
+    if (!user.uid) {
+      console.warn('Order subscription: user present but missing uid', user);
+      addToast('Login incomplete — please logout and login again to load orders.');
+      setOrders([]);
+      return;
+    }
+
     // mark loading while waiting for snapshot
     setOrders(null);
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      console.warn('orders subscribe timed out');
+      addToast('Unable to load orders. Please check your connection or try again.');
+      setOrders([]);
+    }, 7000);
+
     const unsub = subscribeUserOrders(user.uid, (items) => {
+      if (timedOut) {
+        // ignore late snapshot after timeout
+        console.debug('late orders snapshot ignored');
+        return;
+      }
+      clearTimeout(timeout);
       console.debug('orders snapshot', items);
       setOrders(items || []);
     }, (err) => {
+      clearTimeout(timeout);
       console.error('orders subscribe failed', err);
-      // treat as empty to avoid leaving UI in perpetual loading state
+      addToast('Unable to load orders (permission or network issue).');
       setOrders([]);
     });
-    return () => unsub && unsub();
-  }, [user]);
 
-  const value = useMemo(() => ({ orders, createOrder, updateOrder, cancelOrder, ORDER_STEPS }), [orders]);
+    return () => {
+      clearTimeout(timeout);
+      unsub && unsub();
+    };
+  }, [user, refetchKey]);
+
+  const refreshOrders = () => setRefetchKey((k) => k + 1);
+
+  const value = useMemo(() => ({ orders, createOrder, updateOrder, cancelOrder, ORDER_STEPS, refreshOrders }), [orders, createOrder, updateOrder, cancelOrder, refreshOrders]);
 
   return <OrderContext.Provider value={value}>{children}</OrderContext.Provider>;
 }

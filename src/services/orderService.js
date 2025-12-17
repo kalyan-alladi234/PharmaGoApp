@@ -23,12 +23,15 @@ export async function createOrderRecord(uid, order) {
   return ref.id;
 }
 
-export function subscribeUserOrders(uid, cb) {
+export function subscribeUserOrders(uid, cb, errCb) {
   const q = query(collection(db, ORDERS_COL), where('userId', '==', uid), orderBy('createdAt', 'desc'));
   const unsub = onSnapshot(q, (snap) => {
     const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     cb(items);
-  }, (err) => console.error('orders subscribe error', err));
+  }, (err) => {
+    console.error('orders subscribe error', err);
+    if (typeof errCb === 'function') errCb(err);
+  });
   return unsub;
 }
 

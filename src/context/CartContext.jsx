@@ -1,4 +1,6 @@
 import { createContext, useContext, useState } from "react";
+import { useAuth } from "./AuthContext";
+import { useToast } from "./ToastContext";
 
 const CartContext = createContext();
 
@@ -6,7 +8,15 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
 
   // ✅ Add to cart
+  const { user } = useAuth();
+  const { addToast } = useToast();
+
   const addToCart = (item) => {
+    if (!user) {
+      addToast("Please login to add items to cart.");
+      return false;
+    }
+
     setCart((prevCart) => {
       const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
 
@@ -22,6 +32,9 @@ export const CartProvider = ({ children }) => {
         return [...prevCart, { ...item, qty: 1 }];
       }
     });
+
+    addToast("Added to cart.");
+    return true;
   };
 
   // ✅ Remove item completely

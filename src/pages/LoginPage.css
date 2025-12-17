@@ -4,7 +4,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  background: #f0f4ff;
   font-family: 'Poppins', sans-serif;
   padding: 20px;
 }
@@ -102,6 +102,31 @@
 .login-card p a:hover {
   color: #6a11cb;
   text-decoration: underline;
+}
+
+/* alternate actions under the form */
+.login-alt {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.login-alt p {
+  margin: 0;
+  color: #666;
+}
+.btn-register {
+  background: transparent;
+  border: 2px solid #2575fc;
+  color: #2575fc;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-register:hover {
+  background: rgba(37,117,252,0.06);
 }
 
 /* ===== Responsive ===== */

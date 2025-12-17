@@ -1,33 +1,26 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import OrderTracker from '../components/OrderTracker';
 import { useOrders } from '../context/OrderContext';
-import { useAuth } from '../context/AuthContext';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, query, where, orderBy } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import './OrdersPage.css';
 
 export default function OrdersPage() {
-  const { orders, ORDER_STEPS, updateOrder, cancelOrder } = useOrders();
-  const { user } = useAuth();
+  const { orders, ORDER_STEPS, updateOrder, cancelOrder, refreshOrders } = useOrders();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [presMap, setPresMap] = useState({});
   const [editing, setEditing] = useState(null);
   const [addressDraft, setAddressDraft] = useState('');
+  const [fetchResult, setFetchResult] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
 
-  if (!user) return <p>Please login to view your orders.</p>;
-  if (!orders) return <p>Loading orders…</p>;
-  if (orders.length === 0) return <p>You have no orders yet.</p>;
-
-  const startEdit = (o) => {
-    setEditing(o.id);
-    setAddressDraft(o.address || '');
-  };
-  const saveEdit = async (id) => {
-    await updateOrder(id, { address: addressDraft });
-    setEditing(null);
-  };
-
+  // load attached prescription metadata when orders change
   useEffect(() => {
     let mounted = true;
+    if (!orders || orders.length === 0) return;
     const ids = new Set();
     orders.forEach((o) => o.items.forEach((it) => it.prescriptionId && ids.add(it.prescriptionId)));
     if (ids.size === 0) return;
@@ -47,9 +40,69 @@ export default function OrdersPage() {
     return () => (mounted = false);
   }, [orders]);
 
+  if (!user) return <p>Please login to view your orders.</p>;
+  if (!orders) {
+    if (user && !user.uid) {
+      return (
+        <div className="p-4">
+          <h1 className="text-2xl font-bold mb-4">Your Orders</h1>
+          <p>Unable to load orders — your login looks incomplete.</p>
+          <div className="mt-3">
+            <button className="btn-primary" onClick={() => { logout(); navigate('/login'); }}>Logout & Login</button>
+            <button className="btn-ghost" onClick={() => refreshOrders()}>Retry</button>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Your Orders</h1>
+        <p>Loading orders…</p>
+        <div className="mt-3">
+          <button className="btn-ghost" onClick={() => refreshOrders()}>Retry</button>
+        </div>
+      </div>
+    );
+  }
+  if (orders.length === 0) return <p>You have no orders yet.</p>;
+
+  // Diagnostic: manual fetch to check Firestore directly
+  const fetchOrdersNow = async () => {
+    setFetchResult(null);
+    setFetchError(null);
+    try {
+      const q = query(collection(db, 'orders'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+      const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setFetchResult(items);
+    } catch (e) {
+      console.error('fetchOrdersNow failed', e);
+      setFetchError(String(e));
+    }
+  };
+
+  const startEdit = (o) => {
+    setEditing(o.id);
+    setAddressDraft(o.address || '');
+  };
+  const saveEdit = async (id) => {
+    await updateOrder(id, { address: addressDraft });
+    setEditing(null);
+  };
+
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Your Orders</h1>
+      <div className="mb-3">
+        <button className="btn-ghost" onClick={fetchOrdersNow}>Fetch Orders Now (debug)</button>
+        {fetchError && <div className="text-red-600 mt-2">Error: {fetchError}</div>}
+        {fetchResult && (
+          <div className="mt-2 text-sm">
+            <div className="font-medium">Fetched {fetchResult.length} orders:</div>
+            <pre style={{ whiteSpace: 'pre-wrap', marginTop: 6 }}>{JSON.stringify(fetchResult, null, 2)}</pre>
+          </div>
+        )}
+      </div>
       <div className="space-y-6">
         {orders.map((o) => (
           <div key={o.id} className="border rounded p-4">

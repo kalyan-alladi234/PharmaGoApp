@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
 import { useCart } from "../context/CartContext";
 import { useOrders } from "../context/OrderContext";
 import { useAuth } from "../context/AuthContext";
@@ -24,6 +25,7 @@ export default function CheckoutPage() {
   const [processing, setProcessing] = useState(false);
   const [errors, setErrors] = useState({});
   const [card, setCard] = useState({ number: "", name: "", expiry: "", cvv: "" });
+  const { addToast } = useToast();
 
   const subtotal = cart.reduce((sum, item) => sum + (Number(String(item.price).replace(/[^0-9.]/g, "")) || 0) * (item.qty || 1), 0);
   const shipping = cart.length > 0 ? 49 : 0;
@@ -56,19 +58,28 @@ export default function CheckoutPage() {
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
+    console.debug('Checkout pay clicked', { cart });
+    addToast(`Cart length: ${cart.length}`);
     setProcessing(true);
     try {
       const orderId = await createOrder({ address: formData.address, payment: paymentMethod });
+      if (!orderId) {
+        // createOrder returns null when user is not logged in or cart invalid
+        setProcessing(false);
+        addToast('Please login to place an order.');
+        return;
+      }
       // small UX delay
       setTimeout(() => {
         setProcessing(false);
         clearCart();
-        alert(`✅ Payment Successful via ${paymentMethod.toUpperCase()}! Order: ${orderId}`);
+        addToast(`✅ Payment Successful via ${paymentMethod.toUpperCase()}! Order: ${orderId}`);
         navigate('/orders');
       }, 700);
     } catch (e) {
       setProcessing(false);
       console.error('createOrder failed', e);
+      addToast('Failed to place order. Please try again.');
     }
   };
 
@@ -77,6 +88,19 @@ export default function CheckoutPage() {
       <div className="p-4">
         <h1 className="text-2xl font-bold mb-4">Checkout</h1>
         <p>Your cart is empty. Please add items before checkout.</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Checkout</h1>
+        <p>Please <strong>login</strong> to place an order, or register for a new account.</p>
+        <div className="mt-4 space-x-3">
+          <button className="btn-primary" onClick={() => navigate('/login')}>Go to Login</button>
+          <button className="btn-ghost" onClick={() => navigate('/signup')}>Register</button>
+        </div>
       </div>
     );
   }
